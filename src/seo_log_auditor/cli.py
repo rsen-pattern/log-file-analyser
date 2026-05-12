@@ -57,7 +57,7 @@ def _run_app(args: argparse.Namespace) -> int:
         str(args.max_upload_mb),
         "--browser.gatherUsageStats",
         "false",
-        # ----- "Editorial Tech" theme (mirrors hiten.eu) -----
+        # ----- "Editorial Tech" theme (mirrors pattern.com) -----
         "--theme.base",
         "dark",
         "--theme.primaryColor",

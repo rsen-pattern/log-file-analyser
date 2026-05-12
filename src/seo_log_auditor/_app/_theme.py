@@ -1,6 +1,6 @@
 """Visual theme for the Streamlit app.
 
-Mirrors the "Editorial Tech" design system used at https://hiten.eu —
+Mirrors the "Editorial Tech" design system used at https://pattern.com —
 near-black surfaces, neon-lime accent, JetBrains Mono / Space Grotesk
 / Inter typography. Streamlit's primary/background/text colors are
 already wired up via the ``--theme.*`` CLI flags in ``cli.py``; this
@@ -15,7 +15,7 @@ Public API:
   ``section`` string like ``"01 / crawl budget"`` to also render the
   ◇-prefixed section marker.
 * :func:`add_footer()` — call at the bottom of every page. Renders the
-  credit line linking to https://hiten.eu and the GitHub repo.
+  credit line linking to https://pattern.com and the GitHub repo.
 * :data:`PLOTLY_TEMPLATE` — a Plotly layout dict that matches the
   dark/lime palette. Pass it as ``template=PLOTLY_TEMPLATE`` (or use
   :func:`apply_plotly_template` for a one-shot).
@@ -370,9 +370,9 @@ def setup_page(section: str | None = None) -> None:
     st.markdown(
         """
         <div class="brand-header">
-          <span class="brand-mark">HS</span>
+          <span class="brand-mark">RS</span>
           <span class="brand-name">seo-log-auditor</span>
-          <span class="brand-tag">· by Hiten Sangani</span>
+          <span class="brand-tag">· by Rahul Sengupta · Pattern</span>
           <span class="brand-spacer"></span>
           <span class="brand-status">runs locally</span>
         </div>
@@ -388,16 +388,16 @@ def setup_page(section: str | None = None) -> None:
 
 
 def add_footer() -> None:
-    """Render the credit footer linking to hiten.eu and the GitHub repo."""
+    """Render the credit footer linking to pattern.com and the GitHub repo."""
     st.markdown(
         """
         <div class="app-footer">
           <span class="app-footer-prompt">v0.1.0 · MIT · runs entirely on your machine</span>
           <span>
             Built by
-            <a href="https://hiten.eu" target="_blank" rel="noopener noreferrer">Hiten Sangani</a>
+            <a href="https://pattern.com" target="_blank" rel="noopener noreferrer">Rahul Sengupta · Pattern</a>
             ·
-            <a href="https://github.com/hitensangani/seo-log-auditor" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://github.com/rsen-pattern/log-file-analyser" target="_blank" rel="noopener noreferrer">GitHub</a>
           </span>
         </div>
         """,

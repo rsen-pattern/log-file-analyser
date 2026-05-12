@@ -15,8 +15,8 @@
 
 If you've found a security issue — for example, a way the parser could be tricked into executing code, a path-traversal in the launcher scripts, a way the sitemap fetcher could be abused for SSRF — please report it privately:
 
-1. Use [GitHub's private vulnerability reporting](https://github.com/hitensangani/seo-log-auditor/security/advisories/new) (preferred), or
-2. Email me via the contact form at [hiten.eu](https://hiten.eu).
+1. Use [GitHub's private vulnerability reporting](https://github.com/rsen-pattern/log-file-analyser/security/advisories/new) (preferred), or
+2. Reach out via the contact form at [pattern.com](https://pattern.com).
 
 I aim to acknowledge reports within 72 hours and ship a fix within 14 days for confirmed issues. Critical issues (RCE, data exfiltration) will be prioritised.
 
@@ -47,6 +47,6 @@ If you discover the app making any other outbound connection, that's a security 
 
 ## Disclosure policy
 
-Once a fix is shipped, I'll publish a [security advisory](https://github.com/hitensangani/seo-log-auditor/security/advisories) crediting the reporter (unless they prefer to stay anonymous).
+Once a fix is shipped, we'll publish a [security advisory](https://github.com/rsen-pattern/log-file-analyser/security/advisories) crediting the reporter (unless they prefer to stay anonymous).
 
-— Hiten Sangani · [hiten.eu](https://hiten.eu)
+— Rahul Sengupta · Pattern · [pattern.com](https://pattern.com)

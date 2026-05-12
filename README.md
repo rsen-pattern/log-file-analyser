@@ -6,7 +6,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/seo-log-auditor.svg)](https://pypi.org/project/seo-log-auditor/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/hitensangani/seo-log-auditor/actions/workflows/ci.yml/badge.svg)](https://github.com/hitensangani/seo-log-auditor/actions/workflows/ci.yml)
-[![GitHub stars](https://img.shields.io/github/stars/hitensangani/seo-log-auditor?style=social)](https://github.com/hitensangani/seo-log-auditor/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/rsen-pattern/log-file-analyser?style=social)](https://github.com/rsen-pattern/log-file-analyser/stargazers)
 
 ![Overview](docs/screenshots/01.png)
 
@@ -60,7 +60,7 @@ seo-log-auditor
 
 ### Option 4 — Double-click launcher (no terminal)
 
-Grab `seo-log-auditor.command` (macOS) or `seo-log-auditor.bat` (Windows) from the [latest release](https://github.com/hitensangani/seo-log-auditor/releases) and double-click. The script auto-installs `uv` if needed, then launches the app.
+Grab `seo-log-auditor.command` (macOS) or `seo-log-auditor.bat` (Windows) from the [latest release](https://github.com/rsen-pattern/log-file-analyser/releases) and double-click. The script auto-installs `uv` if needed, then launches the app.
 
 ### Quick start (5 steps)
 
@@ -148,7 +148,7 @@ This is my first public open-source project. I want it to be useful to other SEO
 
 1. **Star the repo** if you find the idea useful. It's the single highest-signal thing you can do — it tells me to keep investing time.
 2. **Try it on your own logs and open an issue** describing what worked, what broke, what was confusing. Specific data > generic feedback.
-3. **Suggest a feature** via [GitHub Issues](https://github.com/hitensangani/seo-log-auditor/issues/new/choose). The roadmap below is just my opinion — yours is probably better.
+3. **Suggest a feature** via [GitHub Issues](https://github.com/rsen-pattern/log-file-analyser/issues/new/choose). The roadmap below is just my opinion — yours is probably better.
 4. **Send a pull request.** See [CONTRIBUTING.md](CONTRIBUTING.md) for how the codebase is structured and what "good" looks like.
 5. **Write about it.** A blog post, LinkedIn post, conference lightning talk, internal tool round-up — credit appreciated, see below.
 
@@ -182,27 +182,27 @@ If this saved you money, time, or a meeting where someone asked "how is our craw
 
 ### Free, takes 5 seconds
 
-- [![Star on GitHub](https://img.shields.io/github/stars/hitensangani/seo-log-auditor?style=social)](https://github.com/hitensangani/seo-log-auditor) **Star the repo.** GitHub stars are how this surfaces in trending lists, awesome-lists, and search.
+- [![Star on GitHub](https://img.shields.io/github/stars/rsen-pattern/log-file-analyser?style=social)](https://github.com/rsen-pattern/log-file-analyser) **Star the repo.** GitHub stars are how this surfaces in trending lists, awesome-lists, and search.
 - **Fork it.** Even if you don't plan to contribute, forks signal real-world use.
-- **Follow me on GitHub** → [@hitensangani](https://github.com/hitensangani)
+- **Follow on GitHub** → [@rsen-pattern](https://github.com/rsen-pattern)
 
 ### When you write or talk about it
 
 If you mention `seo-log-auditor` in a blog post, talk, tweet, LinkedIn post, internal write-up, or newsletter, please credit:
 
-> Built by **Hiten Sangani** ([hiten.eu](https://hiten.eu)) — open-source on GitHub at [hitensangani/seo-log-auditor](https://github.com/hitensangani/seo-log-auditor).
+> Built by **Rahul Sengupta · Pattern** ([pattern.com](https://pattern.com)) — open-source on GitHub at [rsen-pattern/log-file-analyser](https://github.com/rsen-pattern/log-file-analyser).
 
-A link back to this repo and to [hiten.eu](https://hiten.eu) is the kindest thing you can do. Tag me on LinkedIn / X if you'd like a thank-you reply.
+A link back to this repo and to [pattern.com](https://pattern.com) is the kindest thing you can do. Tag us on LinkedIn / X if you'd like a thank-you reply.
 
 ### If your team adopts it at work
 
-If `seo-log-auditor` ends up part of your team's regular workflow, I'd genuinely love to hear about it — drop a note via the [Discussions tab](https://github.com/hitensangani/seo-log-auditor/discussions) or via [hiten.eu](https://hiten.eu). Real-world deployment stories shape what comes next.
+If `seo-log-auditor` ends up part of your team's regular workflow, we'd genuinely love to hear about it — drop a note via the [Discussions tab](https://github.com/rsen-pattern/log-file-analyser/discussions) or via [pattern.com](https://pattern.com). Real-world deployment stories shape what comes next.
 
-### About me
+### About
 
-I'm Hiten Sangani, a Berlin-based SEO Engineer working on growth, automation, and AI-first search. 10+ years turning search into revenue — from programmatic SEO that returned 200×, to free-tool flywheels that 2×'d demos, to merging PRs straight into production.
+Maintained by Rahul Sengupta at Pattern.
 
-→ [hiten.eu](https://hiten.eu) · [GitHub](https://github.com/hitensangani) · [LinkedIn](https://www.linkedin.com/in/hitensangani/)
+→ [pattern.com](https://pattern.com) · [GitHub](https://github.com/rsen-pattern)
 
 ---
 
@@ -240,7 +240,7 @@ Edit it to match your URL structure, then upload it via the **Page-pattern rules
 <summary>Click to expand</summary>
 
 ```bash
-git clone https://github.com/hitensangani/seo-log-auditor.git
+git clone https://github.com/rsen-pattern/log-file-analyser.git
 cd seo-log-auditor
 python3 -m venv .venv
 source .venv/bin/activate

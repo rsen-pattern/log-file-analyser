@@ -42,8 +42,8 @@ The `analysis/` modules are pure functions — they take a parsed DataFrame and 
 ## Local development
 
 ```bash
-git clone https://github.com/hitensangani/seo-log-auditor.git
-cd seo-log-auditor
+git clone https://github.com/rsen-pattern/log-file-analyser.git
+cd log-file-analyser
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
@@ -103,6 +103,6 @@ Every merged PR gets:
 
 ## Questions?
 
-Open a [Discussion](https://github.com/hitensangani/seo-log-auditor/discussions) or ping me via [hiten.eu](https://hiten.eu). I read everything.
+Open a [Discussion](https://github.com/rsen-pattern/log-file-analyser/discussions) or ping us via [pattern.com](https://pattern.com). We read everything.
 
-— Hiten
+— Rahul Sengupta · Pattern
