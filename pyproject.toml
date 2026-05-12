@@ -1,0 +1,89 @@
+# --------------------------------------------------------------------------- #
+# Before publishing to PyPI, fill in:
+#   - [project] authors (email)
+#   - [project.urls] (GitHub user/repo)
+# Everything else should be ready to ship.
+# --------------------------------------------------------------------------- #
+
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "seo-log-auditor"
+version = "0.1.0"
+description = "Audit Googlebot crawl behaviour from raw nginx access logs. Runs entirely on your machine."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Hiten Sangani" },
+]
+keywords = [
+    "seo",
+    "technical-seo",
+    "googlebot",
+    "crawl-budget",
+    "log-analysis",
+    "nginx",
+    "streamlit",
+    "loki",
+    "grafana",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: Log Analysis",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "streamlit>=1.30",
+    "pandas>=2.0",
+    "plotly>=5.18",
+    "requests>=2.31",
+    "PyYAML>=6.0",
+    "python-dateutil>=2.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "build>=1.0",
+]
+
+[project.scripts]
+seo-log-auditor = "seo_log_auditor.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/rsen-pattern/log-file-analyser"
+Repository = "https://github.com/rsen-pattern/log-file-analyser"
+Issues = "https://github.com/rsen-pattern/log-file-analyser/issues"
+Changelog = "https://github.com/rsen-pattern/log-file-analyser/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/seo_log_auditor"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+    "/CHANGELOG.md",
+    "/pyproject.toml",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,92 @@
+name: Bug report
+description: Something broke. The app crashed, parsed wrong, showed wrong numbers.
+title: "[bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. The more specific you can be, the faster I can fix it.
+
+        **Before submitting:**
+        - Search [existing issues](https://github.com/hitensangani/seo-log-auditor/issues) to avoid duplicates.
+        - **Do not paste real production logs.** Redact URLs and IPs. A small synthetic snippet that reproduces the bug is far more useful.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Run `seo-log-auditor --version` (once it's added) or check `pip show seo-log-auditor`.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: How did you install it?
+      options:
+        - uvx
+        - pipx
+        - pip in a venv
+        - Double-click launcher (.command / .bat)
+        - Cloned from source
+        - Other (describe in details)
+    validations:
+      required: true
+
+  - type: input
+    id: python_version
+    attributes:
+      label: Python version
+      description: Output of `python3 --version`.
+      placeholder: "3.11.7"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "macOS 14.5 / Ubuntu 22.04 / Windows 11"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: A clear description of what you saw vs. what you expected.
+      placeholder: |
+        I uploaded a 30-day Loki JSON export. The Crawl Budget page shows 0 hits even though Bot Verification shows 400k verified Googlebot hits.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: How to reproduce
+      description: |
+        Step-by-step. Include a redacted log snippet if the bug is parser-related.
+      placeholder: |
+        1. Run `uvx seo-log-auditor`
+        2. Upload the attached `repro.log` (10 lines, redacted)
+        3. Paste sitemap URL `https://example.com/sitemap.xml`
+        4. Click Load / refresh
+        5. Click Crawl Budget — table is empty
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output
+      description: Paste the full traceback or log output. Redact anything sensitive.
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots, hypotheses, related issues, etc.
