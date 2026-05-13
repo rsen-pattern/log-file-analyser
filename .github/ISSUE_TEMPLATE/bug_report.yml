@@ -9,7 +9,7 @@ body:
         Thanks for taking the time to file a bug. The more specific you can be, the faster I can fix it.
 
         **Before submitting:**
-        - Search [existing issues](https://github.com/hitensangani/seo-log-auditor/issues) to avoid duplicates.
+        - Search [existing issues](https://github.com/rsen-pattern/log-file-analyser/issues) to avoid duplicates.
         - **Do not paste real production logs.** Redact URLs and IPs. A small synthetic snippet that reproduces the bug is far more useful.
 
   - type: input
