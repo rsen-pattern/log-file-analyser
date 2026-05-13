@@ -5,7 +5,12 @@ import streamlit as st
 
 from seo_log_auditor.analysis.budget import crawl_budget_distribution, hits_over_time
 from seo_log_auditor.ui_state import filter_to_googlebot, require_state
-from seo_log_auditor._app._theme import add_footer, setup_page
+from seo_log_auditor._app._theme import (
+    add_footer,
+    render_dataframe,
+    render_plotly,
+    setup_page,
+)
 
 st.set_page_config(page_title="Crawl Budget", layout="wide")
 setup_page("01 / crawl budget")
@@ -26,25 +31,20 @@ dist = crawl_budget_distribution(
     sitemap_page_types=state.sitemap_page_types if not state.sitemap_page_types.empty else None,
 )
 
-if dist.empty:
-    st.info("No data yet.")
-    st.stop()
-
-st.dataframe(
-    dist.style.format({
-        "hit_share": "{:.1%}",
-        "url_share": "{:.1%}",
-        "delta": "{:+.1%}",
-    }),
-    use_container_width=True,
+render_dataframe(
+    dist,
+    empty_message="No crawl-budget data yet. Upload logs and click **Load / refresh**.",
 )
+
+if dist.empty:
+    st.stop()
 
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("Hit share by page type")
     fig = px.pie(dist.reset_index(), names="page_type", values="hits", hole=0.4)
     fig.update_layout(height=380, margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    render_plotly(fig)
 
 with col2:
     st.subheader("Hit share vs. URL share")
@@ -54,14 +54,14 @@ with col2:
     fig = px.bar(cmp, x="page_type", y="share", color="series", barmode="group")
     fig.update_yaxes(tickformat=".0%")
     fig.update_layout(height=380, margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    render_plotly(fig)
 
 st.subheader("Hits over time, by page type")
 ts = hits_over_time(bot_df, freq="1h")
 if not ts.empty:
     fig = px.area(ts, x="bucket", y="hits", color="page_type")
     fig.update_layout(height=380, margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    render_plotly(fig)
 else:
     st.info("No timestamps available for the trend chart.")
 

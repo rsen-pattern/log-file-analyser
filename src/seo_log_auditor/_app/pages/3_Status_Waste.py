@@ -11,7 +11,12 @@ from seo_log_auditor.analysis.status_waste import (
     worst_offenders,
 )
 from seo_log_auditor.ui_state import filter_to_googlebot, require_state
-from seo_log_auditor._app._theme import add_footer, setup_page
+from seo_log_auditor._app._theme import (
+    add_footer,
+    render_dataframe,
+    render_plotly,
+    setup_page,
+)
 
 st.set_page_config(page_title="Status Waste", layout="wide")
 setup_page("03 / status waste")
@@ -34,23 +39,24 @@ c3.metric("Waste ratio", f"{overview['waste_ratio']:.1%}")
 
 st.subheader("Status class breakdown")
 classes = status_class_breakdown(bot_df)
-if not classes.empty:
+if classes.empty:
+    st.info("No hits to break down yet.")
+else:
     fig = px.bar(classes, x="status_class", y="hits", text="hits")
     fig.update_layout(height=320, margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    render_plotly(fig)
 
 st.subheader("Waste ratio per page type")
 by_type = waste_by_page_type(bot_df)
+render_dataframe(
+    by_type,
+    empty_message="No per-page-type waste data yet.",
+)
 if not by_type.empty:
-    st.dataframe(
-        by_type.style.format({"waste_ratio": "{:.1%}"}),
-        use_container_width=True,
-        hide_index=True,
-    )
     fig = px.bar(by_type, x="page_type", y="waste_ratio", text="non_200")
     fig.update_yaxes(tickformat=".0%")
     fig.update_layout(height=320, margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    render_plotly(fig)
 
 st.subheader("Worst offenders")
 top_n = st.slider("Show top N URLs", min_value=20, max_value=500, value=100, step=20)
@@ -60,7 +66,10 @@ selected_classes = st.multiselect(
     default=["3xx", "4xx", "5xx"],
 )
 offenders = worst_offenders(bot_df, status_classes=tuple(selected_classes), top_n=top_n)
-st.dataframe(offenders, use_container_width=True, hide_index=True)
+render_dataframe(
+    offenders,
+    empty_message="No offenders match the current status-class filter. Try widening the selection.",
+)
 
 st.divider()
 st.subheader("404 forensics: where did Google find these?")
@@ -103,7 +112,7 @@ else:
     c2.metric("In your sitemap", f"{in_sitemap_count:,}",
               help="Fix or remove these from the sitemap -- it's directly telling Google to fetch dead URLs.")
     c3.metric("With Referer header", f"{with_referer:,}")
-    st.dataframe(forensics, use_container_width=True, hide_index=True)
+    render_dataframe(forensics)
     st.download_button(
         "Download 404 forensics as CSV",
         data=forensics.to_csv(index=False).encode(),

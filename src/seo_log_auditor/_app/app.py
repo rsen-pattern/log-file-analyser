@@ -27,7 +27,7 @@ from seo_log_auditor.ui_state import (
 )
 from seo_log_auditor.sitemap import to_paths
 
-from seo_log_auditor._app._theme import add_footer, setup_page
+from seo_log_auditor._app._theme import add_footer, render_plotly, setup_page
 
 
 st.set_page_config(
@@ -51,16 +51,20 @@ def _sidebar() -> None:
             "Grafana / Loki export",
             accept_multiple_files=True,
             help=(
-                "Drop one or more files exported from Grafana Explore. "
+                "Export from Grafana using LogQL: "
+                "`{app=\"ingress-nginx\"} |= \"Googlebot\"`. "
                 "JSON / JSONL / NDJSON / CSV / TXT / LOG are all auto-detected. "
-                "No extension filter is applied so Finder won't grey anything out."
+                "Drop one or more files (max 200 MB each)."
             ),
         )
         sitemap_url = st.text_input(
             "Sitemap URL",
             value=st.session_state.get("sitemap_url", ""),
             placeholder="https://example.com/sitemap.xml",
-            help="Plain sitemap or sitemap index. Used for orphan detection and stale-page analysis.",
+            help=(
+                "Must resolve to a valid XML sitemap or sitemap index. "
+                "Used to cross-reference crawled URLs for orphan and stale-page analysis."
+            ),
         )
         st.session_state["sitemap_url"] = sitemap_url
 
@@ -96,12 +100,28 @@ def _sidebar() -> None:
             help="Drops cached log parses, sitemap fetches, and Google IP-range data. Use after editing inputs or fixing a sitemap URL.",
         )
 
+        if st.session_state.get("log_df") is not None:
+            st.divider()
+            reset = st.button(
+                "🗑 Clear data & start over",
+                use_container_width=True,
+                help="Wipes all loaded data and resets the session.",
+            )
+        else:
+            reset = False
+
     if clear:
         st.cache_data.clear()
         for key in ("log_df", "sitemap", "sitemap_paths", "sitemap_page_types"):
             st.session_state[key] = None if key == "log_df" else st.session_state.get(key)
         st.session_state["log_df"] = None
         st.success("Cleared cached data. Click **Load / refresh** to re-run.")
+
+    if reset:
+        st.cache_data.clear()
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
 
     if run:
         _process_inputs(uploads, sitemap_url, patterns_file, verify_bots)
@@ -112,9 +132,16 @@ def _process_inputs(uploads, sitemap_url: str, patterns_file, verify_bots: bool)
         st.sidebar.error("Please upload at least one log file.")
         return
 
-    with st.spinner("Parsing log files"):
-        files = [(u.name, u.getvalue()) for u in uploads]
-        df = parse_uploads_cached(files)
+    with st.spinner("Parsing log files…"):
+        try:
+            files = [(u.name, u.getvalue()) for u in uploads]
+            df = parse_uploads_cached(files)
+        except Exception as exc:  # noqa: BLE001
+            st.sidebar.error(
+                f"Could not parse log file: {exc}\n\n"
+                "Check that the file is a valid Grafana/Loki export of nginx access logs."
+            )
+            return
 
     if df.empty:
         st.sidebar.error("Couldn't parse any rows. Is this a Grafana/Loki export of nginx access logs?")
@@ -133,27 +160,34 @@ def _process_inputs(uploads, sitemap_url: str, patterns_file, verify_bots: bool)
     sitemap_result = None
     sitemap_page_types = pd.Series(dtype="string")
     if sitemap_url.strip():
-        with st.spinner(f"Fetching sitemap {sitemap_url}"):
-            sitemap_result = fetch_sitemap_cached(sitemap_url.strip())
-        host = urlparse(sitemap_url).netloc or None
-        sitemap_paths = to_paths(sitemap_result.urls, base_host=host)
-        sitemap_page_types = classifier.classify_series(sitemap_paths)
-
-        # Surface what happened so the user isn't guessing
-        with st.sidebar:
-            st.caption(
-                f"Sitemap: fetched {len(sitemap_result.fetched)} document(s), "
-                f"{len(sitemap_result.urls):,} URLs, {len(sitemap_paths):,} paths after host filter."
-            )
-            if sitemap_result.urls and not sitemap_paths:
-                st.warning(
-                    "All sitemap URLs were filtered out by host matching. "
-                    "Your sitemap may live on a different domain than the URLs inside it."
+        with st.spinner(f"Fetching sitemap {sitemap_url}…"):
+            try:
+                sitemap_result = fetch_sitemap_cached(sitemap_url.strip())
+            except Exception as exc:  # noqa: BLE001
+                st.sidebar.error(
+                    f"Could not load sitemap from `{sitemap_url}`: {exc}"
                 )
-            for err in sitemap_result.errors[:5]:
-                st.error(f"Sitemap error: {err}")
-            if len(sitemap_result.errors) > 5:
-                st.caption(f"...and {len(sitemap_result.errors) - 5} more sitemap errors.")
+                sitemap_result = None
+        if sitemap_result is not None:
+            host = urlparse(sitemap_url).netloc or None
+            sitemap_paths = to_paths(sitemap_result.urls, base_host=host)
+            sitemap_page_types = classifier.classify_series(sitemap_paths)
+
+            # Surface what happened so the user isn't guessing
+            with st.sidebar:
+                st.caption(
+                    f"Sitemap: fetched {len(sitemap_result.fetched)} document(s), "
+                    f"{len(sitemap_result.urls):,} URLs, {len(sitemap_paths):,} paths after host filter."
+                )
+                if sitemap_result.urls and not sitemap_paths:
+                    st.warning(
+                        "All sitemap URLs were filtered out by host matching. "
+                        "Your sitemap may live on a different domain than the URLs inside it."
+                    )
+                for err in sitemap_result.errors[:5]:
+                    st.error(f"Sitemap error: {err}")
+                if len(sitemap_result.errors) > 5:
+                    st.caption(f"...and {len(sitemap_result.errors) - 5} more sitemap errors.")
 
     with st.spinner("Looking up Google IP ranges"):
         ranges = fetch_google_ranges_cached()
@@ -184,6 +218,11 @@ def _body() -> None:
     st.caption(
         "upload a grafana/loki export of {app=\"ingress-nginx\"} |= \"Googlebot\", "
         "add your sitemap, and dig in. each technique lives on its own page in the sidebar."
+    )
+
+    st.info(
+        "🔒 **All processing happens on your machine.** "
+        "No log data, URLs, or sitemap contents are sent anywhere."
     )
 
     state = get_state()
@@ -234,7 +273,7 @@ def _body() -> None:
         )
         fig = px.area(ts_df, x="bucket", y="hits", color="page_type")
         fig.update_layout(height=380, margin=dict(l=0, r=0, t=20, b=0))
-        st.plotly_chart(fig, use_container_width=True)
+        render_plotly(fig)
     else:
         st.info("No timestamps in the loaded data; trend chart unavailable.")
 

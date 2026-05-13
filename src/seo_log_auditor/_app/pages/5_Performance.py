@@ -5,7 +5,12 @@ import streamlit as st
 
 from seo_log_auditor.analysis.performance import hits_by_size_decile, latency_summary, size_vs_latency
 from seo_log_auditor.ui_state import filter_to_googlebot, require_state
-from seo_log_auditor._app._theme import add_footer, setup_page
+from seo_log_auditor._app._theme import (
+    add_footer,
+    render_dataframe,
+    render_plotly,
+    setup_page,
+)
 
 st.set_page_config(page_title="Performance", layout="wide")
 setup_page("05 / performance")
@@ -42,7 +47,7 @@ else:
         log_x=True,
     )
     fig.update_layout(height=480, margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    render_plotly(fig)
 
 st.subheader("Hits per URL, bucketed by page-size decile")
 st.caption(
@@ -50,15 +55,17 @@ st.caption(
     "the size-based inflection point."
 )
 deciles = hits_by_size_decile(bot_df)
-if not deciles.empty:
+if deciles.empty:
+    st.info("Not enough size variation to compute deciles yet.")
+else:
     deciles_display = deciles.assign(
         bucket=lambda d: d.apply(
             lambda r: f"{int(r['lower_bytes']):,} - {int(r['upper_bytes']):,} B", axis=1
         )
     )
-    st.dataframe(deciles_display, use_container_width=True, hide_index=True)
+    render_dataframe(deciles_display)
     fig = px.bar(deciles_display, x="bucket", y="avg_hits_per_url", text="urls")
     fig.update_layout(height=320, margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    render_plotly(fig)
 
 add_footer()
