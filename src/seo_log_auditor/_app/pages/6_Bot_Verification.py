@@ -9,7 +9,12 @@ from seo_log_auditor.analysis.masquerade import (
     verification_summary,
 )
 from seo_log_auditor.ui_state import require_state
-from seo_log_auditor._app._theme import add_footer, setup_page
+from seo_log_auditor._app._theme import (
+    add_footer,
+    render_dataframe,
+    render_plotly,
+    setup_page,
+)
 
 st.set_page_config(page_title="Bot Verification", layout="wide")
 setup_page("06 / bot verification")
@@ -39,17 +44,24 @@ if not state.verification_enabled:
 
 st.subheader("Verdict mix")
 verdicts = hits_by_verdict(df)
-if not verdicts.empty:
+if verdicts.empty:
+    st.info("No verdicts to plot yet.")
+else:
     fig = px.bar(verdicts, x="verdict", y="hits", text="hits")
     fig.update_layout(height=320, margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    render_plotly(fig)
 
 st.subheader("Top spoofers")
 spoofers = top_spoofers(df, top_n=100)
 if spoofers.empty:
     st.success("No spoofed Googlebot hits detected.")
 else:
-    st.dataframe(spoofers, use_container_width=True, hide_index=True)
+    render_dataframe(
+        spoofers,
+        column_overrides={
+            "user_agent": st.column_config.TextColumn("User Agent", width="large"),
+        },
+    )
     st.download_button(
         "Download spoofer IP list",
         data=spoofers.to_csv(index=False).encode(),

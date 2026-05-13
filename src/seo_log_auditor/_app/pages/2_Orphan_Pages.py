@@ -4,7 +4,7 @@ import streamlit as st
 
 from seo_log_auditor.analysis.orphans import find_orphans
 from seo_log_auditor.ui_state import filter_to_googlebot, require_state
-from seo_log_auditor._app._theme import add_footer, setup_page
+from seo_log_auditor._app._theme import add_footer, render_dataframe, setup_page
 
 st.set_page_config(page_title="Orphan Pages", layout="wide")
 setup_page("02 / orphans")
@@ -36,11 +36,15 @@ include_non_200 = st.toggle(
 orphans = find_orphans(bot_df, state.sitemap_paths, only_200=not include_non_200)
 
 st.metric("Orphan URLs", f"{len(orphans):,}")
+
 if orphans.empty:
-    st.success("No orphans found.")
+    st.success("No orphans found. Every crawled URL is listed in your sitemap.")
     st.stop()
 
-st.dataframe(orphans, use_container_width=True, hide_index=True)
+render_dataframe(
+    orphans,
+    empty_message="No orphans found for the current filters.",
+)
 
 st.download_button(
     "Download orphans as CSV",

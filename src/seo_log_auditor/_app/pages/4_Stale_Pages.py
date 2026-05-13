@@ -5,7 +5,12 @@ import streamlit as st
 
 from seo_log_auditor.analysis.frequency import crawl_depth_distribution, stale_pages
 from seo_log_auditor.ui_state import filter_to_googlebot, require_state
-from seo_log_auditor._app._theme import add_footer, setup_page
+from seo_log_auditor._app._theme import (
+    add_footer,
+    render_dataframe,
+    render_plotly,
+    setup_page,
+)
 
 st.set_page_config(page_title="Stale Pages", layout="wide")
 setup_page("04 / stale")
@@ -36,7 +41,13 @@ c1, c2 = st.columns(2)
 c1.metric("Never crawled", f"{never:,}")
 c2.metric(f"Crawled but >{stale_days}d old", f"{old:,}")
 
-st.dataframe(stale, use_container_width=True, hide_index=True)
+render_dataframe(
+    stale,
+    empty_message=(
+        "No stale pages at this threshold. Try lowering the slider, or every "
+        "sitemap URL has been crawled recently."
+    ),
+)
 
 st.download_button(
     "Download stale list as CSV",
@@ -46,16 +57,17 @@ st.download_button(
 )
 
 st.divider()
-st.subheader("Heuristic depth distribution (placeholder for technique 4 deeper layer)")
+st.subheader("Crawl depth distribution")
 st.caption(
-    "Until you upload a Screaming Frog / Sitebulb crawl with internal-link depth, "
-    "we approximate depth as the number of path segments. The real metric needs "
-    "shortest-path-from-homepage data."
+    "Approximate depth based on path segments. Upload a Screaming Frog / "
+    "Sitebulb crawl for precise shortest-path data."
 )
 depth = crawl_depth_distribution(bot_df)
-if not depth.empty:
+if depth.empty:
+    st.info("No depth data to show yet.")
+else:
     fig = px.bar(depth, x="depth", y="hits", text="hits")
     fig.update_layout(height=320, margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    render_plotly(fig)
 
 add_footer()

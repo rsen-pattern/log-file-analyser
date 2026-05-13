@@ -286,6 +286,19 @@ code, pre {
 [data-testid="stToolbar"] { display: none !important; }
 [data-testid="stDecoration"] { display: none !important; }
 footer { display: none !important; }
+
+/* ---------- Accessibility: focus indicators + shape differentiation ---------- */
+*:focus-visible {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 2px !important;
+}
+.stMultiSelect [data-baseweb="tag"] {
+  border: 2px solid var(--bg-0) !important;
+  font-weight: 600 !important;
+}
+.section-marker {
+  font-size: 0.85rem !important;
+}
 </style>
 """.replace(
     "__FONTS__", _FONTS
@@ -369,8 +382,8 @@ def setup_page(section: str | None = None) -> None:
     st.markdown(_CSS, unsafe_allow_html=True)
     st.markdown(
         """
-        <div class="brand-header">
-          <span class="brand-mark">RS</span>
+        <div class="brand-header" role="banner" aria-label="seo-log-auditor by Rahul Sengupta and Pattern">
+          <span class="brand-mark" aria-hidden="true">RS</span>
           <span class="brand-name">seo-log-auditor</span>
           <span class="brand-tag">· by Rahul Sengupta · Pattern</span>
           <span class="brand-spacer"></span>
@@ -385,6 +398,143 @@ def setup_page(section: str | None = None) -> None:
             unsafe_allow_html=True,
         )
     apply_plotly_template()
+
+
+# --------------------------------------------------------------------------- #
+# Dataframe display helpers
+# --------------------------------------------------------------------------- #
+
+COLUMN_LABELS = {
+    "path": "Path",
+    "hits": "Hits",
+    "status": "Status",
+    "page_type": "Page Type",
+    "hit_share": "Hit Share %",
+    "url_share": "URL Share %",
+    "sitemap_urls": "Sitemap URLs",
+    "delta": "Delta %",
+    "last_crawled": "Last Crawled",
+    "days_since": "Days Since Crawl",
+    "status_mix": "Status Codes",
+    "avg_hits_per_url": "Avg Hits / URL",
+    "lower_bytes": "Size (Min)",
+    "upper_bytes": "Size (Max)",
+    "total_hits": "Total Hits",
+    "user_agent": "User Agent",
+    "non_200": "Non-200 Hits",
+    "waste_ratio": "Waste Ratio %",
+    "sample_query": "Sample Query",
+    "top_param": "Top Parameter",
+    "paths_seen": "Paths Seen",
+    "ip": "IP",
+    "param": "Parameter",
+    "variants": "Variants",
+    "depth": "Depth",
+    "decile": "Decile",
+    "urls": "URLs",
+    "bucket": "Bucket",
+    "median_bytes": "Median Bytes",
+    "median_latency_ms": "Median Latency (ms)",
+    "status_class": "Status Class",
+    "share": "Share %",
+    "verdict": "Verdict",
+    "total": "Total",
+    "referer": "Referer",
+    "referer_hits": "Referer Hits",
+    "in_sitemap": "In Sitemap",
+}
+
+_PERCENT_COLS = {"hit_share", "url_share", "delta", "waste_ratio", "share"}
+_LARGE_COLS = {"path", "sample_query", "user_agent", "referer", "last_crawled", "bucket"}
+_SMALL_COLS = {
+    "hits", "status", "depth", "decile", "variants", "non_200",
+    "urls", "total_hits", "paths_seen", "in_sitemap", "days_since",
+    "referer_hits", "status_class",
+}
+
+
+def clean_dataframe(df):
+    """Replace None/NaN display values with readable alternatives."""
+    import pandas as pd
+
+    if df is None or df.empty:
+        return df
+    df = df.copy()
+    for col in df.columns:
+        if pd.api.types.is_numeric_dtype(df[col]):
+            df[col] = df[col].fillna(0)
+        elif pd.api.types.is_bool_dtype(df[col]):
+            df[col] = df[col].fillna(False)
+        else:
+            df[col] = df[col].astype("object").fillna("—")
+    return df
+
+
+def _build_column_config(df):
+    """Build a st.column_config dict that renames snake_case columns and sizes them sanely."""
+    from streamlit import column_config as cc
+
+    cfg = {}
+    for col in df.columns:
+        label = COLUMN_LABELS.get(col, str(col).replace("_", " ").title())
+        if col in _PERCENT_COLS:
+            cfg[col] = cc.NumberColumn(label, format="%.1f%%", width="small")
+        elif col in _LARGE_COLS:
+            cfg[col] = cc.TextColumn(label, width="large")
+        elif col in _SMALL_COLS:
+            cfg[col] = cc.NumberColumn(label, width="small") if str(df[col].dtype).startswith(("int", "float", "bool")) else cc.TextColumn(label, width="small")
+        else:
+            cfg[col] = cc.Column(label)
+    return cfg
+
+
+def render_dataframe(
+    df,
+    *,
+    empty_message: str = "No results to display.",
+    column_overrides: dict | None = None,
+    height: int | None = None,
+) -> None:
+    """Render a DataFrame with empty-state, NaN cleanup, and human-readable headers."""
+    import pandas as pd
+
+    if df is None or len(df) == 0:
+        st.info(empty_message)
+        return
+
+    df = clean_dataframe(df)
+
+    # Scale 0-1 ratio columns into 0-100 for the "%" format string.
+    for col in df.columns:
+        if col in _PERCENT_COLS and pd.api.types.is_numeric_dtype(df[col]):
+            try:
+                m = df[col].abs().max()
+                if pd.notna(m) and m <= 1.5:
+                    df[col] = df[col] * 100
+            except Exception:
+                pass
+
+    cfg = _build_column_config(df)
+    if column_overrides:
+        cfg.update(column_overrides)
+
+    st.dataframe(
+        df,
+        use_container_width=True,
+        hide_index=True,
+        column_config=cfg,
+        height=height,
+    )
+
+
+PLOTLY_CONFIG = {"displayModeBar": False}
+
+
+def render_plotly(fig, **kwargs) -> None:
+    """Render a Plotly figure with the floating toolbar hidden."""
+    config = kwargs.pop("config", None) or {}
+    config = {**PLOTLY_CONFIG, **config}
+    st.plotly_chart(fig, use_container_width=kwargs.pop("use_container_width", True), config=config, **kwargs)
 
 
 def add_footer() -> None:

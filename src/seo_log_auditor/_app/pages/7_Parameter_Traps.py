@@ -5,7 +5,12 @@ import streamlit as st
 
 from seo_log_auditor.analysis.param_traps import parameter_frequency, trap_candidates
 from seo_log_auditor.ui_state import filter_to_googlebot, require_state
-from seo_log_auditor._app._theme import add_footer, setup_page
+from seo_log_auditor._app._theme import (
+    add_footer,
+    render_dataframe,
+    render_plotly,
+    setup_page,
+)
 
 st.set_page_config(page_title="Parameter Traps", layout="wide")
 setup_page("07 / parameter traps")
@@ -34,7 +39,7 @@ st.metric("Trap candidates", f"{len(traps):,}")
 if traps.empty:
     st.success(f"No paths with at least {threshold} query variants.")
 else:
-    st.dataframe(traps, use_container_width=True, hide_index=True)
+    render_dataframe(traps)
     st.download_button(
         "Download trap list as CSV",
         data=traps.to_csv(index=False).encode(),
@@ -44,10 +49,12 @@ else:
 
 st.subheader("Most common query parameters across all hits")
 freq = parameter_frequency(bot_df, top_n=30)
-if not freq.empty:
+if freq.empty:
+    st.info("No query parameters detected yet.")
+else:
     fig = px.bar(freq, x="param", y="hits", text="paths_seen")
     fig.update_layout(height=320, margin=dict(l=0, r=0, t=20, b=0))
-    st.plotly_chart(fig, use_container_width=True)
+    render_plotly(fig)
     st.caption("`paths_seen` = number of distinct paths the parameter appears on.")
 
 add_footer()
