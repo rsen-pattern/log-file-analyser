@@ -43,3 +43,10 @@ page_patterns.yaml
 # Environment
 .env
 .env.local
+
+# Private keys (Snowflake auth)
+*.p8
+*.pem
+*_rsa_key.p8
+rsa_key.p8
+private_key*

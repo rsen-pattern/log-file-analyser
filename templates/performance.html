@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "macros.html" import render_table, render_chart %}
+
+{% block title %}Performance · SEO Log Auditor{% endblock %}
+
+{% block content %}
+<div class="section-marker">{{ section }}</div>
+<h1>Page weight, latency and crawl frequency.</h1>
+<p class="caption">Find the inflection point where Googlebot effectively gives up on heavy or slow pages.</p>
+
+<form action="{{ url_for('insights') }}" method="post" class="toolbar">
+  <input type="hidden" name="page" value="{{ page_key }}">
+  <button type="submit" class="primary">Generate AI insights</button>
+</form>
+
+<div class="metrics">
+  <div class="card"><div class="metric-label">p50 latency</div><div class="metric-value">{% if stats.p50 == stats.p50 %}{{ "%.0f"|format(stats.p50) }} ms{% else %}n/a{% endif %}</div></div>
+  <div class="card"><div class="metric-label">p90 latency</div><div class="metric-value">{% if stats.p90 == stats.p90 %}{{ "%.0f"|format(stats.p90) }} ms{% else %}n/a{% endif %}</div></div>
+  <div class="card"><div class="metric-label">p99 latency</div><div class="metric-value">{% if stats.p99 == stats.p99 %}{{ "%.0f"|format(stats.p99) }} ms{% else %}n/a{% endif %}</div></div>
+  <div class="card"><div class="metric-label">max latency</div><div class="metric-value">{% if stats.max == stats.max %}{{ "%.0f"|format(stats.max) }} ms{% else %}n/a{% endif %}</div></div>
+</div>
+
+<h2>Per-URL: median bytes vs. median latency</h2>
+{{ render_chart('scatter', charts) }}
+
+<h2>Hits per URL, bucketed by page-size decile</h2>
+{{ render_table(deciles) }}
+{{ render_chart('deciles', charts) }}
+{% endblock %}

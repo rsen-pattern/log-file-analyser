@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "macros.html" import render_table, render_chart %}
+
+{% block title %}Overview · SEO Log Auditor{% endblock %}
+
+{% block content %}
+<div class="section-marker">{{ section }}</div>
+<h1>Audit Googlebot crawl behaviour from your raw logs.</h1>
+<p class="caption">Upload a Grafana/Loki export, add your sitemap, and dig in. Each technique lives on its own page in the sidebar.</p>
+
+<div class="card">
+  Log data is processed in-memory on the server for your session. AI insights (optional) send only summary metrics to Pattern Bifrost — not raw logs.
+</div>
+
+{% if state is none %}
+<div class="card">
+  <strong>Get started:</strong> download nginx-ingress logs from Grafana Explore, drop the file into the sidebar, paste your sitemap URL, and hit <strong>Load / refresh</strong>.
+</div>
+{% else %}
+<div class="metrics">
+  <div class="card"><div class="metric-label">Bot hits</div><div class="metric-value">{{ metrics.bot_hits }}</div></div>
+  <div class="card"><div class="metric-label">Unique URLs</div><div class="metric-value">{{ metrics.unique_urls }}</div></div>
+  <div class="card"><div class="metric-label">Unique IPs</div><div class="metric-value">{{ metrics.unique_ips }}</div></div>
+  <div class="card"><div class="metric-label">Waste ratio</div><div class="metric-value">{{ metrics.waste_ratio }}</div></div>
+  <div class="card"><div class="metric-label">Verified Googlebot</div><div class="metric-value">{{ metrics.verified_share }}</div></div>
+</div>
+{% if time_span %}<p class="caption">Time range: {{ time_span }}</p>{% endif %}
+
+<h2>Hits over time</h2>
+{% if chart_json %}{{ render_chart('main', {'main': chart_json}) }}{% else %}<p class="caption">No timestamps in the loaded data; trend chart unavailable.</p>{% endif %}
+
+<form action="{{ url_for('insights') }}" method="post" class="toolbar">
+  <input type="hidden" name="page" value="overview">
+  <button type="submit" class="primary">Generate AI insights</button>
+</form>
+{% if insights %}
+<div class="card insights-box">{{ insights }}</div>
+{% endif %}
+
+<h2>What to look at next</h2>
+<ul>
+  <li><a href="{{ url_for('crawl_budget') }}">Crawl Budget</a> — where hits go vs. URL structure</li>
+  <li><a href="{{ url_for('orphan_pages') }}">Orphan Pages</a> — crawled URLs not in sitemap</li>
+  <li><a href="{{ url_for('status_waste') }}">Status Waste</a> — redirects and dead ends</li>
+  <li><a href="{{ url_for('stale_pages_view') }}">Stale Pages</a> — sitemap URLs not visited recently</li>
+  <li><a href="{{ url_for('performance') }}">Performance</a> — size and latency vs. crawl frequency</li>
+  <li><a href="{{ url_for('bot_verification') }}">Bot Verification</a> — real vs. spoofed Googlebot</li>
+  <li><a href="{{ url_for('parameter_traps') }}">Parameter Traps</a> — query-string explosions</li>
+</ul>
+{% endif %}
+{% endblock %}

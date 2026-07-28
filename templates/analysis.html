@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "macros.html" import render_table, render_chart %}
+
+{% block title %}{{ title }} · SEO Log Auditor{% endblock %}
+
+{% block content %}
+<div class="section-marker">{{ section }}</div>
+<h1>{{ title }}</h1>
+<p class="caption">{{ caption }}</p>
+
+<form action="{{ url_for('insights') }}" method="post" class="toolbar">
+  <input type="hidden" name="page" value="{{ page_key }}">
+  <button type="submit" class="primary">Generate AI insights for this page</button>
+</form>
+
+{% if controls is defined %}
+  {% if controls.include_non_200 is defined %}
+  <form method="get" class="toolbar">
+    <label><input type="checkbox" name="include_non_200" value="1" {% if controls.include_non_200 %}checked{% endif %} onchange="this.form.submit()"> Include non-200 hits</label>
+  </form>
+  {% endif %}
+  {% if controls.stale_days is defined %}
+  <form method="get" class="toolbar">
+    <label>Stale threshold (days)
+      <input type="number" name="stale_days" min="1" max="30" value="{{ controls.stale_days }}">
+    </label>
+    <button type="submit">Apply</button>
+  </form>
+  {% endif %}
+  {% if controls.threshold is defined %}
+  <form method="get" class="toolbar">
+    <label>Min query variants
+      <input type="number" name="threshold" min="10" max="500" step="10" value="{{ controls.threshold }}">
+    </label>
+    <button type="submit">Apply</button>
+  </form>
+  {% endif %}
+{% endif %}
+
+{% if metric_label is defined %}
+<div class="card"><div class="metric-label">{{ metric_label }}</div><div class="metric-value">{{ metric_value }}</div></div>
+{% endif %}
+
+{% if metrics is defined %}
+<div class="metrics">
+  {% for label, value in metrics %}
+  <div class="card"><div class="metric-label">{{ label }}</div><div class="metric-value">{{ value }}</div></div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{{ render_table(table) }}
+
+{% if download_name is defined and download_name %}
+<p><a class="btn" href="{{ url_for('download_csv', name=download_name, **request.args) }}">Download CSV</a></p>
+{% endif %}
+
+{% if charts.pie or charts.bar %}
+<div class="grid-2">
+  <div>{% if charts.pie %}<h2>Hit share by page type</h2>{{ render_chart('pie', charts) }}{% endif %}</div>
+  <div>{% if charts.bar %}<h2>Hit share vs. URL share</h2>{{ render_chart('bar', charts) }}{% endif %}</div>
+</div>
+{% endif %}
+
+{% if charts.area %}<h2>Hits over time, by page type</h2>{{ render_chart('area', charts) }}{% endif %}
+{% if charts.depth %}<h2>Crawl depth distribution</h2>{{ render_chart('depth', charts) }}{% endif %}
+{% if charts.freq %}
+  <h2>{{ extra_chart_title or 'Chart' }}</h2>
+  {{ render_chart('freq', charts) }}
+{% endif %}
+{% endblock %}

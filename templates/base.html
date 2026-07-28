@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SEO Log Auditor{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand-header">
+        <span class="brand-mark">RS</span>
+        <div>
+          <div class="brand-name">seo-log-auditor</div>
+          <div class="brand-tag">by Rahul Sengupta · Pattern</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        {% for endpoint, marker, label in nav_items %}
+          <a href="{{ url_for(endpoint) }}" class="{% if request.endpoint == endpoint %}active{% endif %}">{{ marker }} · {{ label }}</a>
+        {% endfor %}
+      </nav>
+
+      <form action="{{ url_for('load_logs') }}" method="post" enctype="multipart/form-data">
+        <h3>Inputs</h3>
+        <label for="log_files">Grafana / Loki export</label>
+        <input id="log_files" name="log_files" type="file" multiple accept=".json,.jsonl,.ndjson,.csv,.txt,.log">
+
+        <label for="sitemap_url">Sitemap URL</label>
+        <input id="sitemap_url" name="sitemap_url" type="text" placeholder="https://example.com/sitemap.xml" value="{{ prefs.sitemap_url }}">
+
+        <label for="patterns_file">Page-pattern rules (optional YAML)</label>
+        <input id="patterns_file" name="patterns_file" type="file" accept=".yaml,.yml">
+
+        <label><input type="checkbox" name="verify_bots" {% if prefs.verification_enabled %}checked{% endif %}> Verify Googlebot via reverse DNS</label>
+        <label><input type="checkbox" name="only_verified" {% if prefs.only_verified_default %}checked{% endif %}> Restrict analysis to verified Googlebot</label>
+
+        <div class="toolbar">
+          <button type="submit" class="primary">Load / refresh</button>
+        </div>
+      </form>
+
+      <form action="{{ url_for('clear_cache') }}" method="post" class="toolbar">
+        <button type="submit">Clear cache &amp; re-fetch</button>
+      </form>
+      {% if prefs.has_data %}
+      <form action="{{ url_for('clear_data') }}" method="post" class="toolbar">
+        <button type="submit">Clear data &amp; start over</button>
+      </form>
+      {% endif %}
+
+      <div class="card" style="margin-top: 1rem;">
+        <button id="testBtn" type="button" onclick="testConnection()">Test Snowflake Connection</button>
+        <div id="snowflake-result" class="caption" style="margin-top: 0.5rem;"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+
+      <div class="footer">
+        v0.1.0 · MIT ·
+        <a href="https://pattern.com" target="_blank" rel="noopener">Rahul Sengupta · Pattern</a> ·
+        <a href="https://github.com/rsen-pattern/log-file-analyser" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function renderCharts() {
+      document.querySelectorAll('script.chart-spec').forEach((script) => {
+        const target = script.nextElementSibling;
+        if (!target) return;
+        const spec = JSON.parse(script.textContent);
+        Plotly.newPlot(target, spec.data, spec.layout, {displayModeBar: false, responsive: true});
+      });
+    }
+
+    async function testConnection() {
+      const btn = document.getElementById('testBtn');
+      const result = document.getElementById('snowflake-result');
+      btn.disabled = true;
+      btn.textContent = 'Testing...';
+      result.textContent = '';
+      try {
+        const response = await fetch('/test-connection', { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+          result.textContent = `Connected: ${data.user} @ ${data.database}.${data.schema}`;
+        } else {
+          result.textContent = data.message;
+        }
+      } catch (err) {
+        result.textContent = 'Failed to reach server: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Test Snowflake Connection';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', renderCharts);
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

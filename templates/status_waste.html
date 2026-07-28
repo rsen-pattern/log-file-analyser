@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "macros.html" import render_table, render_chart %}
+
+{% block title %}Status Waste · SEO Log Auditor{% endblock %}
+
+{% block content %}
+<div class="section-marker">{{ section }}</div>
+<h1>{{ title }}</h1>
+<p class="caption">Waste ratio = non-200 hits / total hits.</p>
+
+<form action="{{ url_for('insights') }}" method="post" class="toolbar">
+  <input type="hidden" name="page" value="{{ page_key }}">
+  <button type="submit" class="primary">Generate AI insights</button>
+</form>
+
+<div class="metrics">
+  <div class="card"><div class="metric-label">Total bot hits</div><div class="metric-value">{{ "{:,}".format(overview.total) }}</div></div>
+  <div class="card"><div class="metric-label">Non-200 hits</div><div class="metric-value">{{ "{:,}".format(overview.non_200) }}</div></div>
+  <div class="card"><div class="metric-label">Waste ratio</div><div class="metric-value">{{ "{:.1%}".format(overview.waste_ratio) }}</div></div>
+</div>
+
+<h2>Status class breakdown</h2>
+{{ render_chart('status', charts) }}
+
+<h2>Waste ratio per page type</h2>
+{{ render_table(by_type) }}
+{{ render_chart('waste_type', charts) }}
+
+<h2>Worst offenders</h2>
+<form method="get" class="toolbar">
+  <label>Top N <input type="number" name="top_n" min="20" max="500" step="20" value="{{ top_n }}"></label>
+  <label><input type="checkbox" name="status_class" value="3xx" {% if '3xx' in selected %}checked{% endif %}> 3xx</label>
+  <label><input type="checkbox" name="status_class" value="4xx" {% if '4xx' in selected %}checked{% endif %}> 4xx</label>
+  <label><input type="checkbox" name="status_class" value="5xx" {% if '5xx' in selected %}checked{% endif %}> 5xx</label>
+  <button type="submit">Apply</button>
+</form>
+{{ render_table(offenders) }}
+
+<h2>404 forensics: where did Google find these?</h2>
+<form method="get" class="toolbar">
+  <input type="hidden" name="top_n" value="{{ top_n }}">
+  {% for cls in selected %}<input type="hidden" name="status_class" value="{{ cls }}">{% endfor %}
+  <label><input type="radio" name="scope" value="googlebot" {% if scope == 'googlebot' %}checked{% endif %} onchange="this.form.submit()"> Googlebot only</label>
+  <label><input type="radio" name="scope" value="all" {% if scope != 'googlebot' %}checked{% endif %} onchange="this.form.submit()"> All hits</label>
+  <label><input type="checkbox" name="forensics_class" value="3xx" {% if '3xx' in forensics_classes %}checked{% endif %}> 3xx</label>
+  <label><input type="checkbox" name="forensics_class" value="4xx" {% if '4xx' in forensics_classes %}checked{% endif %}> 4xx</label>
+  <label><input type="checkbox" name="forensics_class" value="5xx" {% if '5xx' in forensics_classes %}checked{% endif %}> 5xx</label>
+  <button type="submit">Apply forensics filters</button>
+</form>
+{{ render_table(forensics) }}
+{% if not forensics.empty %}
+<p><a class="btn" href="{{ url_for('download_csv', name='404_forensics.csv', scope=scope, forensics_class=forensics_classes) }}">Download 404 forensics CSV</a></p>
+{% endif %}
+{% endblock %}

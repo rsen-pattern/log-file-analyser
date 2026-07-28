@@ -1,0 +1,33 @@
+{% macro render_table(df) %}
+  {% if df is none or df.empty %}
+    <p class="caption">No results to display.</p>
+  {% else %}
+    <div style="overflow-x:auto;">
+      <table class="data">
+        <thead>
+          <tr>
+            {% for col in df.columns %}
+              <th>{{ col.replace('_', ' ') | title }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for _, row in df.head(500).iterrows() %}
+            <tr>
+              {% for col in df.columns %}
+                <td>{{ row[col] }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro render_chart(key, charts) %}
+  {% if charts.get(key) %}
+    <script type="application/json" class="chart-spec">{{ charts[key] | safe }}</script>
+    <div class="chart"></div>
+  {% endif %}
+{% endmacro %}

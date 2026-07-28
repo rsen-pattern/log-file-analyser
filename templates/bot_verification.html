@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "macros.html" import render_table, render_chart %}
+
+{% block title %}Bot Verification · SEO Log Auditor{% endblock %}
+
+{% block content %}
+<div class="section-marker">{{ section }}</div>
+<h1>Real Googlebot vs spoofed user-agents.</h1>
+
+<form action="{{ url_for('insights') }}" method="post" class="toolbar">
+  <input type="hidden" name="page" value="{{ page_key }}">
+  <button type="submit" class="primary">Generate AI insights</button>
+</form>
+
+<div class="metrics">
+  <div class="card"><div class="metric-label">Claimed Googlebot hits</div><div class="metric-value">{{ "{:,}".format(summary.claimed) }}</div></div>
+  <div class="card"><div class="metric-label">Verified</div><div class="metric-value">{{ "{:,}".format(summary.verified) }}</div></div>
+  <div class="card"><div class="metric-label">Spoofed</div><div class="metric-value">{{ "{:,}".format(summary.spoofed) }}</div></div>
+  <div class="card"><div class="metric-label">Verified share</div><div class="metric-value">{{ "{:.0%}".format(summary.verified_share) }}</div></div>
+</div>
+
+{% if not verification_enabled %}
+<div class="card">Reverse-DNS verification is <strong>off</strong>. Enable it in the sidebar for the strictest check (slower).</div>
+{% endif %}
+
+<h2>Verdict mix</h2>
+{{ render_chart('verdicts', charts) }}
+
+<h2>Top spoofers</h2>
+{{ render_table(spoofers) }}
+{% if download_name %}
+<p><a class="btn" href="{{ url_for('download_csv', name=download_name) }}">Download spoofer IP list</a></p>
+{% endif %}
+{% endblock %}
